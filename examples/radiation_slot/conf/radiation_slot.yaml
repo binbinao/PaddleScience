@@ -1,0 +1,147 @@
+defaults:
+  - ppsci_default
+  - _self_
+
+# =============================================================================
+# Radar Radiation Slot Simulation Configuration
+# =============================================================================
+
+# General settings
+mode: train  # train, eval, infer, full
+seed: 42
+output_dir: ${hydra:runtime.output_dir}/outputs
+log_freq: 100
+
+# =============================================================================
+# Geometry Configuration
+# =============================================================================
+GEOMETRY:
+  # Waveguide dimensions (WR-90 standard for Ku band)
+  waveguide_width: 1.02      # cm - wide dimension a
+  waveguide_height: 0.51     # cm - narrow dimension b
+  
+  # Slot parameters
+  slot_length: 2.0           # cm
+  slot_position: 0.5         # cm (center position)
+  
+  # Medium properties
+  medium_epsilon: 1.0        # Air
+  medium_mu: 1.0
+  
+  # Simulation parameters
+  pml_thickness: 1.0         # cm
+  mesh_size: 0.02            # cm (lambda/10 at 15GHz)
+
+# =============================================================================
+# Simulation Configuration
+# =============================================================================
+SIMULATION:
+  # Frequency settings (Ku band: 12-18 GHz)
+  frequency: 15.0            # GHz - center frequency
+  frequency_start: 12.0      # GHz - for frequency sweep
+  frequency_stop: 18.0       # GHz
+  num_frequency_points: 13   # Number of points (0.5GHz spacing)
+  
+  # Cutoff frequency (calculated from waveguide width)
+  cutoff_frequency: 14.67    # GHz
+
+# =============================================================================
+# PINN Model Configuration
+# =============================================================================
+MODEL:
+  # Separate networks for real/imaginary parts and epsilon
+  re_net:
+    input_keys: ['x', 'y']
+    output_keys: ['e_re']
+    num_layers: 4
+    hidden_size: 64
+    activation: 'tanh'
+  
+  im_net:
+    input_keys: ${MODEL.re_net.input_keys}
+    output_keys: ['e_im']
+    num_layers: ${MODEL.re_net.num_layers}
+    hidden_size: ${MODEL.re_net.hidden_size}
+    activation: ${MODEL.re_net.activation}
+  
+  eps_net:
+    input_keys: ${MODEL.re_net.input_keys}
+    output_keys: ['eps']
+    num_layers: ${MODEL.re_net.num_layers}
+    hidden_size: ${MODEL.re_net.hidden_size}
+    activation: ${MODEL.re_net.activation}
+
+# =============================================================================
+# Training Configuration
+# =============================================================================
+TRAIN:
+  epochs: 20000
+  iters_per_epoch: 1
+  eval_during_train: true
+  learning_rate: 0.001
+  batch_size: 1024
+  num_interior_points: 10000
+  num_boundary_points: 500
+  save_freq: 1000
+  log_freq: ${log_freq}
+  
+  # Training mode: 'soft', 'penalty', 'aug_lag'
+  train_mode: 'soft'
+  
+  # Augmented Lagrangian settings
+  max_iter: 10
+  epochs_lbfgs: 1
+  
+  # Pretrained model (optional)
+  pretrained_model_path: null
+  checkpoint_path: null
+
+# =============================================================================
+# Evaluation Configuration
+# =============================================================================
+EVAL:
+  pretrained_model_path: null
+  num_samples: 10000
+
+# =============================================================================
+# Inference Configuration
+# =============================================================================
+INFER:
+  pretrained_model_path: null
+  export_path: ./inference/radiation_slot
+  pdmodel_path: ${INFER.export_path}.pdmodel
+  pdiparams_path: ${INFER.export_path}.pdiparams
+  output_keys: ['e_re', 'e_im', 'eps']
+  device: gpu
+  engine: native
+  precision: fp32
+  batch_size: 128
+
+# =============================================================================
+# Post-processing Configuration
+# =============================================================================
+POSTPROCESS:
+  # Visualization settings
+  visualize_fields: true
+  visualize_radiation_pattern: true
+  visualize_s_parameters: true
+  
+  # Export settings
+  export_vtu: true
+  export_csv: true
+  
+  # Comparison settings
+  compute_metrics: true
+  generate_report: true
+
+# =============================================================================
+# Hydra Settings
+# =============================================================================
+hydra:
+  run:
+    dir: outputs_radiation_slot/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  job:
+    name: radiation_slot
+  sweep:
+    dir: ${hydra.run.dir}
+    subdir: ./${hydra.job.override_dirname}

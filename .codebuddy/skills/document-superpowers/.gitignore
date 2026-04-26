@@ -1,0 +1,5 @@
+# Writing outputs (business data, not part of the skill)
+docs/writing/
+
+# OS files
+.DS_Store
