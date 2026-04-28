@@ -207,10 +207,15 @@ Any load:  Input(x,P) → 5 layers of matrix multiplication + tanh → Output(δ
 
 That's why the speedup jumps from 200× in the elastic zone to **3,000× in the plastic zone**. Scale this to 3D models with millions of DOFs, and the gap becomes astronomical.
 
-Summary:
+Summary — Elastic Zone:
+- PINNs error: **0.88%**
+- FEM: ~1.3 sec → PINNs: ~1.3 ms
+- Speedup: **983×**
 
-  Elastic Zone:          PINNs error 0.88%  |  FEM ~1.3 sec  |  PINNs ~1.3 ms  |  Speedup **983×**
-  Plastic Zone:          PINNs error 1.03%  |  FEM ~3.4 sec  |  PINNs ~1.3 ms  |  Speedup **2,747×**
+Summary — Plastic Zone:
+- PINNs error: **1.03%**
+- FEM: ~3.4 sec → PINNs: ~1.3 ms
+- Speedup: **2,747×**
 
 ---
 
@@ -248,14 +253,25 @@ This isn't the ceiling. Next up: thermo-mechanical coupling, dynamic impact, 3D 
 
 ## Appendix: Technical Specs at a Glance
 
-  Load range:            Part 1: 1–5 kN          →  This article: 10–250 kN
-  Material model:        Part 1: Linear elastic   →  This article: Elastic-plastic (4-stage)
-  FEM method:            Part 1: Direct solve     →  This article: Fiber section + NR iteration
-  PINNs model:           Part 1: 3×32, 2,241      →  This article: 5×64, 16,962 params
-  PINNs output:          Part 1: Deflection only  →  This article: Deflection + stress ratio
-  Deflection error:      Part 1: ~4.7%            →  This article: < 3% (blind test)
-  Speedup:               Part 1: 7.5×             →  This article: 200–3,000×
-  Deflection range:      Part 1: 0.05–0.27 mm     →  This article: 0.5–698 mm
+**Part 1 — Elastic Case**
+- Load range: 1–5 kN
+- Material: Linear elastic
+- FEM: Direct solve
+- PINNs: 3×32, 2,241 params
+- PINNs output: Deflection only
+- Deflection error: ~4.7%
+- Speedup: 7.5×
+- Deflection range: 0.05–0.27 mm
+
+**This Article — Elastic-Plastic Case**
+- Load range: 10–250 kN
+- Material: Elastic-plastic (4-stage constitutive)
+- FEM: Fiber section + Newton-Raphson iteration
+- PINNs: 5×64, 16,962 params
+- PINNs output: Deflection + stress ratio (dual output)
+- Deflection error: < 3% (blind test)
+- Speedup: 200–3,000×
+- Deflection range: 0.5–698 mm
 
 **Reproduce with three commands:**
 
