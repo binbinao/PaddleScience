@@ -83,14 +83,14 @@ The most critical chart is this **load-deflection** plot, showing the exact bifu
 
 The **blue dashed line** assumes the material never yields — a perfectly straight line. The **red solid line** is the real elastic-plastic response — it starts diverging around 140 kN, then shoots upward dramatically.
 
-Key numbers:
+Key numbers — how dramatically the deflection diverges:
 
-  Load 50 kN  →  Elastic: 2.72 mm  |  Actual: 2.53 mm  |  0.93×  |  Elastic
-  Load 130 kN →  Elastic: 7.08 mm  |  Actual: 6.58 mm  |  0.93×  |  Elastic (stress at 96%)
-  Load 140 kN →  Elastic: 7.62 mm  |  Actual: 7.09 mm  |  0.93×  |  ⚠ Yield onset
-  Load 170 kN →  Elastic: 9.25 mm  |  Actual: 19.8 mm  |  2.1×   |  Yield plateau
-  Load 200 kN →  Elastic: 10.9 mm  |  Actual: 133.5 mm |  12.3×  |  Strain hardening
-  Load 250 kN →  Elastic: 13.6 mm  |  Actual: 698.3 mm |  51.3×  |  Ultimate strength
+- **50 kN:** Elastic 2.72 mm → Actual 2.53 mm (0.93×, still in elastic zone)
+- **130 kN:** Elastic 7.08 mm → Actual 6.58 mm (0.93×, stress at 96% of yield)
+- **140 kN:** Elastic 7.62 mm → Actual 7.09 mm (0.93×, yield onset ⚠)
+- **170 kN:** Elastic 9.25 mm → Actual **19.8 mm** (2.1×, yield plateau kicks in)
+- **200 kN:** Elastic 10.9 mm → Actual **133.5 mm** (12.3×, strain hardening)
+- **250 kN:** Elastic 13.6 mm → Actual **698.3 mm** (51.3×, ultimate strength)
 
 From 7 mm at 140 kN to 698 mm at 250 kN — **deflection amplified 100×**. That's the power of plastic deformation. The linear elastic assumption completely breaks down past 140 kN.
 
