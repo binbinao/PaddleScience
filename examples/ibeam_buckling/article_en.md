@@ -43,12 +43,17 @@ Before cranking up the loads, we had the AI research Q235B steel's complete mech
 
 Four stages, four completely different material behaviors:
 
-| Stage | Strain Range | What Happens |
-|-------|-------------|--------------|
-| ① Elastic | 0 – 0.11% | Like a spring — release and it bounces back |
-| ② Yield Plateau | 0.11% – 1.5% | Stress stays constant but deformation surges (the most dangerous phase) |
-| ③ Strain Hardening | 1.5% – 20% | Material "toughens up," stress rises to 420 MPa |
-| ④ Necking & Fracture | 20% – 30% | Localized thinning, then rupture |
+  ① Elastic (0 – 0.11%):
+    Like a spring — release and it bounces back
+
+  ② Yield Plateau (0.11% – 1.5%):
+    Stress stays constant but deformation surges — the most dangerous phase
+
+  ③ Strain Hardening (1.5% – 20%):
+    Material "toughens up," stress rises to 420 MPa
+
+  ④ Necking & Fracture (20% – 30%):
+    Localized thinning, then rupture
 
 Zoomed in at the elastic-to-yield transition — the "yield point" that engineers care about most:
 
@@ -80,14 +85,12 @@ The **blue dashed line** assumes the material never yields — a perfectly strai
 
 Key numbers:
 
-| Load | Elastic Ref | Actual Deflection | Amplification | State |
-|------|------------|-------------------|---------------|-------|
-| 50 kN | 2.72 mm | 2.53 mm | 0.93× | Elastic |
-| 130 kN | 7.08 mm | 6.58 mm | 0.93× | Elastic (stress at 96%) |
-| **140 kN** | 7.62 mm | **7.09 mm** | 0.93× | **Yield onset** |
-| 170 kN | 9.25 mm | **19.8 mm** | **2.1×** | Yield plateau |
-| 200 kN | 10.9 mm | **133.5 mm** | **12.3×** | Strain hardening |
-| 250 kN | 13.6 mm | **698.3 mm** | **51.3×** | At ultimate strength |
+  Load 50 kN  →  Elastic: 2.72 mm  |  Actual: 2.53 mm  |  0.93×  |  Elastic
+  Load 130 kN →  Elastic: 7.08 mm  |  Actual: 6.58 mm  |  0.93×  |  Elastic (stress at 96%)
+  Load 140 kN →  Elastic: 7.62 mm  |  Actual: 7.09 mm  |  0.93×  |  ⚠ Yield onset
+  Load 170 kN →  Elastic: 9.25 mm  |  Actual: 19.8 mm  |  2.1×   |  Yield plateau
+  Load 200 kN →  Elastic: 10.9 mm  |  Actual: 133.5 mm |  12.3×  |  Strain hardening
+  Load 250 kN →  Elastic: 13.6 mm  |  Actual: 698.3 mm |  51.3×  |  Ultimate strength
 
 From 7 mm at 140 kN to 698 mm at 250 kN — **deflection amplified 100×**. That's the power of plastic deformation. The linear elastic assumption completely breaks down past 140 kN.
 
@@ -162,31 +165,25 @@ We picked three tricky values:
 
 ### 65 kN (Elastic)
 
-|  | FEM | PINNs | Deviation |
-|--|-----|-------|-----------|
-| Max deflection | 3.289 mm | 3.246 mm | **1.32%** |
-| Stress ratio | 48.0% | 45.5% | 5.14% |
-| Compute time | 247.9 ms | 1.22 ms | **203× faster** |
+  Max deflection:  FEM 3.289 mm  →  PINNs 3.246 mm  →  Error **1.32%**
+  Stress ratio:   FEM 48.0%      →  PINNs 45.5%     →  Error 5.14%
+  Compute time:   FEM 247.9 ms   →  PINNs 1.22 ms   →  **203× faster**
 
 ### 143 kN (Yield Threshold — Hardest Region)
 
-|  | FEM | PINNs | Deviation |
-|--|-----|-------|-----------|
-| Max deflection | 7.249 mm | 7.104 mm | **2.00%** |
-| Stress ratio | 100.0% (exactly at yield) | 95.8% | 4.18% |
-| Compute time | 1,038 ms | 1.23 ms | **847× faster** |
-| FEM iterations | **37** | 0 | — |
+  Max deflection:  FEM 7.249 mm  →  PINNs 7.104 mm  →  Error **2.00%**
+  Stress ratio:    FEM 100.0%    →  PINNs 95.8%     →  Error 4.18%
+  Compute time:    FEM 1,038 ms  →  PINNs 1.23 ms   →  **847× faster**
+  FEM iterations:  **37**         →  PINNs: 0
 
 Note that FEM needs 37 iterations to converge at this point — the material is right on the elastic-plastic boundary, and the stiffness matrix is changing dramatically. PINNs? Zero iterations. Instant result.
 
 ### 227 kN (Deep Plastic — Deflection 35× the Elastic Value)
 
-|  | FEM | PINNs | Deviation |
-|--|-----|-------|-----------|
-| Max deflection | 439.4 mm | 440.8 mm | **0.33%** |
-| Nonlinear amplification | 35.6× | — | — |
-| Compute time | **3,649 ms** | 1.25 ms | **2,922× faster** |
-| FEM iterations | **50** (maxed out) | 0 | — |
+  Max deflection:         FEM 439.4 mm  →  PINNs 440.8 mm  →  Error **0.33%**
+  Nonlinear amplification:  35.6×        →  —             →  —
+  Compute time:          FEM 3,649 ms  →  PINNs 1.25 ms  →  **2,922× faster**
+  FEM iterations:        **50** (maxed out) →  PINNs: 0
 
 **The deflection is nearly half a meter, and PINNs' prediction deviates by only 0.33%.** FEM took almost 4 seconds and 50 iterations. PINNs took 1.25 milliseconds.
 
@@ -210,14 +207,10 @@ Any load:  Input(x,P) → 5 layers of matrix multiplication + tanh → Output(δ
 
 That's why the speedup jumps from 200× in the elastic zone to **3,000× in the plastic zone**. Scale this to 3D models with millions of DOFs, and the gap becomes astronomical.
 
-Summary table:
+Summary:
 
-| | Elastic Zone | Plastic Zone |
-|--|-------------|--------------|
-| PINNs deflection error | 0.88% | 1.03% |
-| FEM avg time | ~1.3 sec | ~3.4 sec |
-| PINNs avg time | ~1.3 ms | ~1.3 ms |
-| **Speedup** | **983×** | **2,747×** |
+  Elastic Zone:          PINNs error 0.88%  |  FEM ~1.3 sec  |  PINNs ~1.3 ms  |  Speedup **983×**
+  Plastic Zone:          PINNs error 1.03%  |  FEM ~3.4 sec  |  PINNs ~1.3 ms  |  Speedup **2,747×**
 
 ---
 
@@ -255,16 +248,14 @@ This isn't the ceiling. Next up: thermo-mechanical coupling, dynamic impact, 3D 
 
 ## Appendix: Technical Specs at a Glance
 
-| Item | Elastic Case (Part 1) | Plastic Case (This Article) |
-|------|----------------------|----------------------------|
-| Load range | 1–5 kN | **10–250 kN** |
-| Material model | Linear elastic | **Elastic-plastic (4-stage constitutive)** |
-| FEM method | Direct solve | **Fiber section + NR iteration** |
-| PINNs model | 3×32, 2,241 params | **5×64, 16,962 params** |
-| PINNs output | Deflection only | **Deflection + stress ratio (dual output)** |
-| Deflection error | ~4.7% | **< 3% (blind test)** |
-| Speedup | 7.5× | **200–3,000×** |
-| Deflection range | 0.05–0.27 mm | **0.5–698 mm** |
+  Load range:            Part 1: 1–5 kN          →  This article: 10–250 kN
+  Material model:        Part 1: Linear elastic   →  This article: Elastic-plastic (4-stage)
+  FEM method:            Part 1: Direct solve     →  This article: Fiber section + NR iteration
+  PINNs model:           Part 1: 3×32, 2,241      →  This article: 5×64, 16,962 params
+  PINNs output:          Part 1: Deflection only  →  This article: Deflection + stress ratio
+  Deflection error:      Part 1: ~4.7%            →  This article: < 3% (blind test)
+  Speedup:               Part 1: 7.5×             →  This article: 200–3,000×
+  Deflection range:      Part 1: 0.05–0.27 mm     →  This article: 0.5–698 mm
 
 **Reproduce with three commands:**
 
