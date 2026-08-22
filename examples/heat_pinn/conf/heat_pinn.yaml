@@ -21,10 +21,15 @@ hydra:
     subdir: ./
 
 # general settings
-mode: train # running mode: train/eval
+mode: train # running mode: train/eval/export/infer
 seed: 2
 output_dir: ${hydra:run.dir}
 log_freq: 20
+
+# FDM settings
+FDM:
+  n: 100
+  length: 1.0
 
 # model settings
 MODEL:
@@ -38,6 +43,8 @@ MODEL:
 TRAIN:
   epochs: 1000
   iters_per_epoch: 1
+  batch_size: 1024
+  fdm_n: 100
   save_freq: 20
   learning_rate: 5.0e-4
   weight:

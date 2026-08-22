@@ -16,6 +16,32 @@ from ppsci.utils import logger
 einsum_symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
+def _take_slices(tensor, slices):
+    """Index a tensor with 3–5 slices (Paddle has no reliable tuple indexing)."""
+    n = len(slices)
+    if n == 3:
+        return tensor[slices[0], slices[1], slices[2]]
+    if n == 4:
+        return tensor[slices[0], slices[1], slices[2], slices[3]]
+    if n == 5:
+        return tensor[slices[0], slices[1], slices[2], slices[3], slices[4]]
+    raise ValueError(f"Not implemented for {n}-D slice indexing")
+
+
+def _put_slices(tensor, slices, value):
+    """Assign into a tensor with 3–5 slices."""
+    n = len(slices)
+    if n == 3:
+        tensor[slices[0], slices[1], slices[2]] = value
+    elif n == 4:
+        tensor[slices[0], slices[1], slices[2], slices[3]] = value
+    elif n == 5:
+        tensor[slices[0], slices[1], slices[2], slices[3], slices[4]] = value
+    else:
+        raise ValueError(f"Not implemented for {n}-D slice assignment")
+    return tensor
+
+
 class DomainPadding(nn.Layer):
     """Applies domain padding scaled automatically to the input's resolution
 
@@ -735,12 +761,8 @@ class FactorizedSpectralConv(nn.Layer):
         ]
         slices_w += [slice(None, -starts[-1]) if starts[-1] else slice(None)]
 
-        w_real = self.weight[indices].real[
-            slices_w[0], slices_w[1], slices_w[2], slices_w[3]
-        ]
-        w_imag = self.weight[indices].imag[
-            slices_w[0], slices_w[1], slices_w[2], slices_w[3]
-        ]
+        w_real = _take_slices(self.weight[indices].real, slices_w)
+        w_imag = _take_slices(self.weight[indices].imag, slices_w)
 
         starts = [
             (size - min(size, n_mode))
@@ -754,25 +776,13 @@ class FactorizedSpectralConv(nn.Layer):
         slices_x += [
             slice(None, -starts[-1]) if starts[-1] else slice(None)
         ]  # The last mode already has redundant half removed
-        idx_tuple = slices_x
-        if len(idx_tuple) == 4:
-            out_fft[
-                idx_tuple[0], idx_tuple[1], idx_tuple[2], idx_tuple[3]
-            ] = self._contract(
-                x[idx_tuple[0], idx_tuple[1], idx_tuple[2], idx_tuple[3]],
-                w_real,
-                w_imag,
-                separable=self.separable,
-            )
-        elif len(idx_tuple) == 3:
-            out_fft[idx_tuple[0], idx_tuple[1], idx_tuple[2]] = self._contract(
-                x[idx_tuple[0], idx_tuple[1], idx_tuple[2]],
-                w_real,
-                w_imag,
-                separable=self.separable,
-            )
-        else:
-            raise ValueError("Not implemented")
+        contracted = self._contract(
+            _take_slices(x, slices_x),
+            w_real,
+            w_imag,
+            separable=self.separable,
+        )
+        _put_slices(out_fft, slices_x, contracted)
 
         if self.output_scaling_factor is not None and output_shape is None:
             mode_sizes = tuple(

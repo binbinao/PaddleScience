@@ -35,7 +35,9 @@ nav:
       - 安装使用: install_setup.md
       - 快速开始: quickstart.md
       - 多硬件支持: multi_device.md
-      - 学习资料: tutorials.md
+      - 学习资料:
+        - 概览: tutorials.md
+        - 流体代理模型入门: tutorials/fluid_surrogate_drivaernet.md
   - 经典案例:
     - " ":
       - 数学(AI for Math):
@@ -71,6 +73,7 @@ nav:
           - Darcy2D: examples/darcy2d.md
           - DeepCFD: examples/deepcfd.md
           - DrivAerNet: examples/drivaernet.md
+          - DrivAerNet实践入门: examples/drivaernet_practice.md
           - DrivAerNetPlusPlus: examples/drivaernetplusplus.md
           - LDC2D_steady: examples/ldc2d_steady.md
           - LDC2D_unsteady: examples/ldc2d_unsteady.md
@@ -248,6 +251,9 @@ plugins:
             快速开始: Quick Start
             多硬件支持: Multi-Hardware Support
             学习资料: Tutorials
+            概览: Overview
+            流体代理模型入门: Fluid Surrogate Primer
+            DrivAerNet实践入门: DrivAerNet Hands-on
             经典案例: Case Studies
             数学(AI for Math): AI for Math
             技术科学(AI for Technology): AI for Engineering

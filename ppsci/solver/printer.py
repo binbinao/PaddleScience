@@ -98,18 +98,32 @@ def log_train_info(
         log_str += f", {uss_msg}, {pss_msg}"
     logger.info(log_str)
 
+    tbd_scalars = {
+        "train/lr": solver.optimizer.get_lr(),
+        "train/ips": batch_size / solver.train_time_info["batch_cost"].avg,
+        "train/batch_cost": solver.train_time_info["batch_cost"].avg,
+        "train/eta_sec": eta_sec,
+        **{
+            f"train/{key}": solver.train_output_info[key].avg
+            for key in solver.train_output_info
+        },
+    }
+    try:
+        tbd_scalars["train/gpu_mem_reserved_mb"] = device.max_memory_reserved() / (
+            1 << 20
+        )
+        tbd_scalars["train/gpu_mem_allocated_mb"] = device.max_memory_allocated() / (
+            1 << 20
+        )
+    except Exception:
+        pass
+
     # reset time information after printing
     for key in solver.train_time_info:
         solver.train_time_info[key].reset()
 
     logger.scalar(
-        {
-            "train/lr": solver.optimizer.get_lr(),
-            **{
-                f"train/{key}": solver.train_output_info[key].avg
-                for key in solver.train_output_info
-            },
-        },
+        tbd_scalars,
         step=solver.global_step,
         vdl_writer=solver.vdl_writer,
         wandb_writer=solver.wandb_writer,
@@ -158,13 +172,13 @@ def log_eval_info(
     for key in solver.eval_time_info:
         solver.eval_time_info[key].reset()
 
-    # logger.scalar(
-    #     {
-    #         f"eval/{key}": solver.eval_output_info[key].avg
-    #         for key in solver.eval_output_info
-    #     },
-    #     step=solver.global_step,
-    #     vdl_writer=solver.vdl_writer,
-    #     wandb_writer=solver.wandb_writer,
-    #     tbd_writer=solver.tbd_writer,
-    # )
+    logger.scalar(
+        {
+            f"eval/{key}": solver.eval_output_info[key].avg
+            for key in solver.eval_output_info
+        },
+        step=solver.global_step,
+        vdl_writer=solver.vdl_writer,
+        wandb_writer=solver.wandb_writer,
+        tbd_writer=solver.tbd_writer,
+    )

@@ -1,5 +1,7 @@
 # DrivAerNet
 
+> 若你是第一次接触流体代理模型，建议先读学习文档 [流体代理模型从 0 到 1（DrivAerNet）](../tutorials/fluid_surrogate_drivaernet.md)，再回到本文看论文复现细节。
+
 DrivAerNet: A Parametric Car Dataset for Data-Driven Aerodynamic Design and Graph-Based Drag Prediction(DrivAerNet：一个用于数据驱动空气动力学设计和基于图的阻力预测的参数化汽车数据集)
 
 ## 论文信息

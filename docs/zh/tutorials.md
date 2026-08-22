@@ -1,5 +1,9 @@
 # 学习资料
 
+## 文字教程
+
+- [流体代理模型从 0 到 1（DrivAerNet）](tutorials/fluid_surrogate_drivaernet.md)：从原理、数据、三条训练路径、评价指标到每一项 YAML 参数的跟练文档。
+
 ## 教程课件
 
 - [飞桨AI for Science代码入门](https://space.bilibili.com/476867757/lists/4215120?type=season)
